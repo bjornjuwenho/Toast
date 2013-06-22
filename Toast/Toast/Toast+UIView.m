@@ -113,6 +113,7 @@ static const NSString * CSToastActivityViewKey  = @"CSToastActivityViewKey";
                      animations:^{
                          toast.alpha = 1.0;
                      } completion:^(BOOL finished) {
+                         self.toastView = toast;
                          [UIView animateWithDuration:CSToastFadeDuration
                                                delay:interval
                                              options:UIViewAnimationOptionCurveEaseIn
