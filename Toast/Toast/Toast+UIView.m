@@ -25,7 +25,7 @@ static const CGFloat CSToastOpacity             = 0.8;
 static const CGFloat CSToastFontSize            = 16.0;
 static const CGFloat CSToastMaxTitleLines       = 0;
 static const CGFloat CSToastMaxMessageLines     = 0;
-static const CGFloat CSToastFadeDuration        = 0.2;
+static const CGFloat CSToastFadeDuration        = 0.3;
 static const NSString * CSToastViewKey = @"CSToastViewKey";
 
 // shadow appearance
