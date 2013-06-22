@@ -67,8 +67,16 @@ static const NSString * CSToastActivityViewKey  = @"CSToastActivityViewKey";
 {
     if (self.toastView != toastView)
     {
-        [self.toastView.layer removeAllAnimations];
-        objc_setAssociatedObject(self, &CSToastViewKey, toastView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        // Fade out the old toastView before replacing it with the new toastView
+        [UIView animateWithDuration:CSToastFadeDuration
+                              delay:0.0f
+                            options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionBeginFromCurrentState
+                         animations:^{
+                             self.toastView.alpha = 0.0;
+                         } completion:^(BOOL finished) {
+                             [self.toastView removeFromSuperview];
+                             objc_setAssociatedObject(self, &CSToastViewKey, toastView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+                         }];
     }
 }
 
