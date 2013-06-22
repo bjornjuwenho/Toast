@@ -26,6 +26,7 @@ static const CGFloat CSToastFontSize            = 16.0;
 static const CGFloat CSToastMaxTitleLines       = 0;
 static const CGFloat CSToastMaxMessageLines     = 0;
 static const CGFloat CSToastFadeDuration        = 0.2;
+static const NSString * CSToastViewKey = @"CSToastViewKey";
 
 // shadow appearance
 static const CGFloat CSToastShadowOpacity       = 0.8;
@@ -57,6 +58,19 @@ static const NSString * CSToastActivityViewKey  = @"CSToastActivityViewKey";
 
 
 @implementation UIView (Toast)
+
+- (UIView*)toastView {
+    return objc_getAssociatedObject(self, &CSToastViewKey);
+}
+
+- (void)setToastView:(UIView *)toastView
+{
+    if (self.toastView != toastView)
+    {
+        [self.toastView.layer removeAllAnimations];
+        objc_setAssociatedObject(self, &CSToastViewKey, toastView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+    }
+}
 
 #pragma mark - Toast Methods
 
