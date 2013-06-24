@@ -51,6 +51,8 @@ static const NSString * CSToastActivityViewKey  = @"CSToastActivityViewKey";
 
 @interface UIView (ToastPrivate)
 
+@property (nonatomic, readwrite) UIView* toastView;
+
 - (CGPoint)centerPointForPosition:(id)position withToast:(UIView *)toast;
 - (UIView *)viewForMessage:(NSString *)message title:(NSString *)title image:(UIImage *)image;
 
@@ -67,16 +69,7 @@ static const NSString * CSToastActivityViewKey  = @"CSToastActivityViewKey";
 {
     if (self.toastView != toastView)
     {
-        // Fade out the old toastView before replacing it with the new toastView
-        [UIView animateWithDuration:CSToastFadeDuration
-                              delay:0.0f
-                            options:UIViewAnimationOptionCurveEaseIn | UIViewAnimationOptionBeginFromCurrentState
-                         animations:^{
-                             self.toastView.alpha = 0.0;
-                         } completion:^(BOOL finished) {
-                             [self.toastView removeFromSuperview];
-                             objc_setAssociatedObject(self, &CSToastViewKey, toastView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-                         }];
+        objc_setAssociatedObject(self, &CSToastViewKey, toastView, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
     }
 }
 
@@ -113,23 +106,47 @@ static const NSString * CSToastActivityViewKey  = @"CSToastActivityViewKey";
 - (void)showToast:(UIView *)toast duration:(CGFloat)interval position:(id)point {
     toast.center = [self centerPointForPosition:point withToast:toast];
     toast.alpha = 0.0;
-    [self addSubview:toast];
     
+    if (self.toastView == toast && self.toastView.superview == self)
+    {
+        // If the current toast view is reused and is currently visible in the superview, stop all animations
+        // and reset the alpha value and the clock for fading out the toast
+        [toast.layer removeAllAnimations];
+        toast.alpha = 1.0f;
+        [self fadeOutToast:toast withInterval:interval];
+    }
+    else
+    {
+        // Add the toast view as a subview and animate in the toast. For now, if a new toast is added while
+        // the current toast is being displayed, the new toast will be displayed anyway and the superview may
+        // contain both the old and new toast views.
+        self.toastView = toast;
+        [self addSubview:toast];
+        [UIView animateWithDuration:CSToastFadeDuration
+                              delay:0.0
+                            options:UIViewAnimationOptionCurveEaseOut
+                         animations:^{
+                             toast.alpha = 1.0;
+                         } completion:^(BOOL finished) {
+                             [self fadeOutToast:toast withInterval:interval];
+                         }];
+    }
+}
+
+- (void)fadeOutToast:(UIView*)toast withInterval:(CGFloat)interval
+{
+    // The fading out of the toast view may be cancelled e.g when the current toast view has been updated and reshown,
+    // so we only remove the toast from the superview when the animation has finished
     [UIView animateWithDuration:CSToastFadeDuration
-                          delay:0.0
-                        options:UIViewAnimationOptionCurveEaseOut
+                          delay:interval
+                        options:UIViewAnimationOptionCurveEaseIn
                      animations:^{
-                         toast.alpha = 1.0;
+                         toast.alpha = 0.0;
                      } completion:^(BOOL finished) {
-                         self.toastView = toast;
-                         [UIView animateWithDuration:CSToastFadeDuration
-                                               delay:interval
-                                             options:UIViewAnimationOptionCurveEaseIn
-                                          animations:^{
-                                              toast.alpha = 0.0;
-                                          } completion:^(BOOL finished) {
-                                              [toast removeFromSuperview];
-                                          }];
+                         if (finished)
+                         {
+                             [toast removeFromSuperview];
+                         }
                      }];
 }
 

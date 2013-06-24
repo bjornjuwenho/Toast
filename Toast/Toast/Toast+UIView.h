@@ -33,7 +33,7 @@
 @interface UIView (Toast)
 
 // get the toast view
-@property (nonatomic, readwrite) UIView* toastView;
+@property (nonatomic, readonly) UIView* toastView;
 
 // each makeToast method creates a view and displays it as toast
 - (void)makeToast:(NSString *)message;
