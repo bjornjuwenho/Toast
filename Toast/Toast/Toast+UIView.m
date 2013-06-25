@@ -113,6 +113,7 @@ static const NSString * CSToastActivityViewKey  = @"CSToastActivityViewKey";
         // and reset the alpha value and the clock for fading out the toast
         [toast.layer removeAllAnimations];
         toast.alpha = 1.0f;
+        [self bringSubviewToFront:toast];
         [self fadeOutToast:toast withInterval:interval];
     }
     else
